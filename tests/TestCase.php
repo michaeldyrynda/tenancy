@@ -136,7 +136,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function resolveApplicationHttpKernel($app)
     {
-        $app->singleton('Illuminate\Contracts\Http\Kernel', Etc\HttpKernel::class);
+        $app->singleton(\Illuminate\Contracts\Http\Kernel::class, Etc\HttpKernel::class);
     }
 
     /**
@@ -147,7 +147,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function resolveApplicationConsoleKernel($app)
     {
-        $app->singleton('Illuminate\Contracts\Console\Kernel', Etc\ConsoleKernel::class);
+        $app->singleton(\Illuminate\Contracts\Console\Kernel::class, Etc\ConsoleKernel::class);
     }
 
     public function randomString(int $length = 10)

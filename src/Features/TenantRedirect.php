@@ -16,7 +16,7 @@ class TenantRedirect implements Feature
             // replace first occurance of hostname fragment with $domain
             $url = $this->getTargetUrl();
             $hostname = parse_url($url, PHP_URL_HOST);
-            $position = strpos($url, $hostname);
+            $position = strpos($url, (string) $hostname);
             $this->setTargetUrl(substr_replace($url, $domain, $position, strlen($hostname)));
 
             return $this;

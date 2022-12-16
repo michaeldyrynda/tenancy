@@ -56,9 +56,7 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
         }
 
         // Domains
-        if ($this->redis->exists(...array_map(function ($domain) {
-            return "domains:$domain";
-        }, $tenant->domains))) {
+        if ($this->redis->exists(...array_map(fn($domain) => "domains:$domain", $tenant->domains))) {
             throw new DomainsOccupiedByOtherTenantException;
         }
     }
@@ -98,10 +96,10 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
 
             $data = [];
             foreach ($tenant->data as $key => $value) {
-                $data[$key] = json_encode($value);
+                $data[$key] = json_encode($value, JSON_THROW_ON_ERROR);
             }
 
-            $pipe->hmset("tenants:{$tenant->id}", array_merge($data, ['_tenancy_domains' => json_encode($tenant->domains)]));
+            $pipe->hmset("tenants:{$tenant->id}", array_merge($data, ['_tenancy_domains' => json_encode($tenant->domains, JSON_THROW_ON_ERROR)]));
         });
     }
 
@@ -109,13 +107,13 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
     {
         $id = $tenant->id;
 
-        $old_domains = json_decode($this->redis->hget("tenants:$id", '_tenancy_domains'), true);
+        $old_domains = json_decode($this->redis->hget("tenants:$id", '_tenancy_domains'), true, 512, JSON_THROW_ON_ERROR);
         $deleted_domains = array_diff($old_domains, $tenant->domains);
         $domains = $tenant->domains;
 
         $data = [];
         foreach ($tenant->data as $key => $value) {
-            $data[$key] = json_encode($value);
+            $data[$key] = json_encode($value, JSON_THROW_ON_ERROR);
         }
 
         $this->redis->transaction(function ($pipe) use ($id, $data, $deleted_domains, $domains) {
@@ -127,7 +125,7 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
                 $pipe->hset("domains:$domain", 'tenant_id', $id);
             }
 
-            $pipe->hmset("tenants:$id", array_merge($data, ['_tenancy_domains' => json_encode($domains)]));
+            $pipe->hmset("tenants:$id", array_merge($data, ['_tenancy_domains' => json_encode($domains, JSON_THROW_ON_ERROR)]));
         });
     }
 
@@ -150,9 +148,7 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
      */
     public function all(array $ids = []): array
     {
-        $hashes = array_map(function ($hash) {
-            return "tenants:{$hash}";
-        }, $ids);
+        $hashes = array_map(fn($hash) => "tenants:{$hash}", $ids);
 
         if (! $hashes) {
             // Prefix is applied to all functions except scan().
@@ -161,27 +157,20 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
 
             $all_keys = $this->redis->keys('tenants:*');
 
-            $hashes = array_map(function ($key) use ($redis_prefix) {
-                // Left strip $redis_prefix from $key
-                return substr($key, strlen($redis_prefix));
-            }, $all_keys);
+            $hashes = array_map(fn($key) => // Left strip $redis_prefix from $key
+substr($key, strlen($redis_prefix)), $all_keys);
         }
 
-        return array_map(function ($tenant) {
-            return $this->makeTenant($this->redis->hgetall($tenant));
-        }, $hashes);
+        return array_map(fn($tenant) => $this->makeTenant($this->redis->hgetall($tenant)), $hashes);
     }
 
     /**
      * Make a Tenant instance from low-level array data.
-     *
-     * @param array $data
-     * @return Tenant
      */
     protected function makeTenant(array $data): Tenant
     {
         foreach ($data as $key => $value) {
-            $data[$key] = json_decode($value, true);
+            $data[$key] = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
         }
 
         $domains = $data['_tenancy_domains'];
@@ -192,24 +181,24 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
 
     public function get(string $key, Tenant $tenant = null)
     {
-        $tenant = $tenant ?? $this->tenant();
+        $tenant ??= $this->tenant();
 
         $json_data = $this->redis->hget("tenants:{$tenant->id}", $key);
         if ($json_data === false) {
             return;
         }
 
-        return json_decode($json_data, true);
+        return json_decode($json_data, true, 512, JSON_THROW_ON_ERROR);
     }
 
     public function getMany(array $keys, Tenant $tenant = null): array
     {
-        $tenant = $tenant ?? $this->tenant();
+        $tenant ??= $this->tenant();
 
         $result = [];
         $values = $this->redis->hmget("tenants:{$tenant->id}", $keys);
         foreach ($keys as $i => $key) {
-            $result[$key] = json_decode($values[$i], true);
+            $result[$key] = json_decode($values[$i], true, 512, JSON_THROW_ON_ERROR);
         }
 
         return $result;
@@ -217,16 +206,16 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
 
     public function put(string $key, $value, Tenant $tenant = null): void
     {
-        $tenant = $tenant ?? $this->tenant();
-        $this->redis->hset("tenants:{$tenant->id}", $key, json_encode($value));
+        $tenant ??= $this->tenant();
+        $this->redis->hset("tenants:{$tenant->id}", $key, json_encode($value, JSON_THROW_ON_ERROR));
     }
 
     public function putMany(array $kvPairs, Tenant $tenant = null): void
     {
-        $tenant = $tenant ?? $this->tenant();
+        $tenant ??= $this->tenant();
 
         foreach ($kvPairs as $key => $value) {
-            $kvPairs[$key] = json_encode($value);
+            $kvPairs[$key] = json_encode($value, JSON_THROW_ON_ERROR);
         }
 
         $this->redis->hmset("tenants:{$tenant->id}", $kvPairs);
@@ -234,7 +223,7 @@ class RedisStorageDriver implements StorageDriver, CanDeleteKeys
 
     public function deleteMany(array $keys, Tenant $tenant = null): void
     {
-        $tenant = $tenant ?? $this->tenant();
+        $tenant ??= $this->tenant();
 
         $this->redis->hdel("tenants:{$tenant->id}", ...$keys);
     }

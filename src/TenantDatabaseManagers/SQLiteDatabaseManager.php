@@ -12,7 +12,7 @@ class SQLiteDatabaseManager implements TenantDatabaseManager
     {
         try {
             return fclose(fopen(database_path($name), 'w'));
-        } catch (\Throwable $th) {
+        } catch (\Throwable) {
             return false;
         }
     }
@@ -21,7 +21,7 @@ class SQLiteDatabaseManager implements TenantDatabaseManager
     {
         try {
             return unlink(database_path($name));
-        } catch (\Throwable $th) {
+        } catch (\Throwable) {
             return false;
         }
     }

@@ -17,8 +17,7 @@ abstract class Repository
     /** @var string */
     protected $tableName;
 
-    /** @var Builder */
-    private $table;
+    private \Illuminate\Database\Query\Builder $table;
 
     public function __construct(ConfigRepository $config)
     {

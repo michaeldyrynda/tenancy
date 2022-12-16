@@ -57,9 +57,6 @@ class TenantManager
 
     /**
      * Write a new tenant to storage.
-     *
-     * @param Tenant $tenant
-     * @return self
      */
     public function createTenant(Tenant $tenant): self
     {
@@ -105,9 +102,6 @@ class TenantManager
 
     /**
      * Delete a tenant from storage.
-     *
-     * @param Tenant $tenant
-     * @return self
      */
     public function deleteTenant(Tenant $tenant): self
     {
@@ -128,10 +122,8 @@ class TenantManager
      * Alias for Stancl\Tenancy\Tenant::create.
      *
      * @param string|string[] $domains
-     * @param array $data
-     * @return Tenant
      */
-    public static function create($domains, array $data = []): Tenant
+    public static function create(string|array $domains, array $data = []): Tenant
     {
         return Tenant::create($domains, $data);
     }
@@ -139,8 +131,6 @@ class TenantManager
     /**
      * Ensure that a tenant can be created.
      *
-     * @param Tenant $tenant
-     * @return void
      * @throws TenantCannotBeCreatedException
      */
     public function ensureTenantCanBeCreated(Tenant $tenant): void
@@ -154,9 +144,6 @@ class TenantManager
 
     /**
      * Update an existing tenant in storage.
-     *
-     * @param Tenant $tenant
-     * @return self
      */
     public function updateTenant(Tenant $tenant): self
     {
@@ -173,11 +160,10 @@ class TenantManager
      * Find tenant by domain & initialize tenancy.
      *
      * @param string|null $domain
-     * @return self
      */
     public function init(string $domain = null): self
     {
-        $domain = $domain ?? request()->getHost();
+        $domain ??= request()->getHost();
         $this->initializeTenancy($this->findByDomain($domain));
 
         return $this;
@@ -185,9 +171,6 @@ class TenantManager
 
     /**
      * Find tenant by ID & initialize tenancy.
-     *
-     * @param string $id
-     * @return self
      */
     public function initById(string $id): self
     {
@@ -199,8 +182,6 @@ class TenantManager
     /**
      * Find a tenant using an id.
      *
-     * @param string $id
-     * @return Tenant
      * @throws TenantCouldNotBeIdentifiedException
      */
     public function find(string $id): Tenant
@@ -212,7 +193,6 @@ class TenantManager
      * Find a tenant using a domain name.
      *
      * @param string $id
-     * @return Tenant
      * @throws TenantCouldNotBeIdentifiedException
      */
     public function findByDomain(string $domain): Tenant
@@ -223,13 +203,10 @@ class TenantManager
     /**
      * Find a tenant using an arbitrary key.
      *
-     * @param string $key
-     * @param mixed $value
-     * @return Tenant
      * @throws TenantCouldNotBeIdentifiedException
      * @throws NotImplementedException
      */
-    public function findBy(string $key, $value): Tenant
+    public function findBy(string $key, mixed $value): Tenant
     {
         if ($key === null) {
             throw new Exception('No key supplied.');
@@ -240,7 +217,7 @@ class TenantManager
         }
 
         if (! $this->storage instanceof CanFindByAnyKey) {
-            throw new NotImplementedException(get_class($this->storage), 'findBy',
+            throw new NotImplementedException($this->storage::class, 'findBy',
                 'This method was added to the DB storage driver provided by the package in 2.2.0 and might be part of the StorageDriver contract in 3.0.0.'
             );
         }
@@ -256,18 +233,13 @@ class TenantManager
      */
     public function all($only = []): Collection
     {
-        $only = array_map(function ($item) {
-            return $item instanceof Tenant ? $item->id : $item;
-        }, (array) $only);
+        $only = array_map(fn($item) => $item instanceof Tenant ? $item->id : $item, (array) $only);
 
         return collect($this->storage->all($only));
     }
 
     /**
      * Initialize tenancy.
-     *
-     * @param Tenant $tenant
-     * @return self
      */
     public function initializeTenancy(Tenant $tenant): self
     {
@@ -290,9 +262,6 @@ class TenantManager
 
     /**
      * Execute TenancyBootstrappers.
-     *
-     * @param Tenant $tenant
-     * @return self
      */
     public function bootstrapTenancy(Tenant $tenant): self
     {
@@ -336,7 +305,6 @@ class TenantManager
     /**
      * Get the current tenant.
      *
-     * @param string $key
      * @return Tenant|null|mixed
      */
     public function getTenant(string $key = null)
@@ -420,14 +388,10 @@ class TenantManager
 
     /**
      * Add an event listener.
-     *
-     * @param string $name
-     * @param callable $listener
-     * @return self
      */
     public function eventListener(string $name, callable $listener): self
     {
-        $this->eventListeners[$name] = $this->eventListeners[$name] ?? [];
+        $this->eventListeners[$name] ??= [];
         $this->eventListeners[$name][] = $listener;
 
         return $this;
@@ -436,10 +400,6 @@ class TenantManager
     /**
      * Add an event hook.
      * @alias eventListener
-     *
-     * @param string $name
-     * @param callable $listener
-     * @return self
      */
     public function hook(string $name, callable $listener): self
     {
@@ -449,15 +409,11 @@ class TenantManager
     /**
      * Trigger an event and execute its listeners.
      *
-     * @param string $name
-     * @param mixed ...$args
      * @return string[]
      */
-    public function event(string $name, ...$args): array
+    public function event(string $name, mixed ...$args): array
     {
-        return array_reduce($this->eventListeners[$name] ?? [], function ($results, $listener) use ($args) {
-            return array_merge($results, $listener($this, ...$args) ?? []);
-        }, []);
+        return array_reduce($this->eventListeners[$name] ?? [], fn($results, $listener) => array_merge($results, $listener($this, ...$args) ?? []), []);
     }
 
     public function __call($method, $parameters)

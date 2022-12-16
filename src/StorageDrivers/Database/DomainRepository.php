@@ -28,9 +28,7 @@ class DomainRepository extends Repository
 
     public function insertTenantDomains(Tenant $tenant)
     {
-        $this->insert(array_map(function ($domain) use ($tenant) {
-            return ['domain' => $domain, 'tenant_id' => $tenant->id];
-        }, $tenant->domains));
+        $this->insert(array_map(fn($domain) => ['domain' => $domain, 'tenant_id' => $tenant->id], $tenant->domains));
     }
 
     public function updateTenantDomains(Tenant $tenant, array $originalDomains)

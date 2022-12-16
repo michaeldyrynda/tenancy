@@ -18,9 +18,7 @@ class TenantRepository extends Repository
             $data = $this->table()->get();
         }
 
-        return $data->map(function (stdClass $obj) {
-            return $this->decodeData((array) $obj);
-        });
+        return $data->map(fn(stdClass $obj) => static::decodeData((array) $obj));
     }
 
     public function find($tenant)
@@ -77,7 +75,7 @@ class TenantRepository extends Repository
         if (in_array($key, static::customColumns())) {
             $record->update([$key => $value]);
         } else {
-            $data = json_decode($record->first()->{static::dataColumn()}, true);
+            $data = json_decode($record->first()->{static::dataColumn()}, true, 512, JSON_THROW_ON_ERROR);
             $data[$key] = $value;
 
             $record->update([static::dataColumn() => $data]);
@@ -89,7 +87,7 @@ class TenantRepository extends Repository
         $record = $this->where('id', $tenant->id);
 
         $data = [];
-        $jsonData = json_decode($record->first()->{static::dataColumn()}, true);
+        $jsonData = json_decode($record->first()->{static::dataColumn()}, true, 512, JSON_THROW_ON_ERROR);
         foreach ($kvPairs as $key => $value) {
             if (in_array($key, static::customColumns())) {
                 $data[$key] = $value;
@@ -99,7 +97,7 @@ class TenantRepository extends Repository
             }
         }
 
-        $data[static::dataColumn()] = json_encode($jsonData);
+        $data[static::dataColumn()] = json_encode($jsonData, JSON_THROW_ON_ERROR);
 
         $record->update($data);
     }
@@ -109,7 +107,7 @@ class TenantRepository extends Repository
         $record = $this->where('id', $tenant->id);
 
         $data = [];
-        $jsonData = json_decode($record->first(static::dataColumn())->data, true);
+        $jsonData = json_decode($record->first(static::dataColumn())->data, true, 512, JSON_THROW_ON_ERROR);
         foreach ($keys as $key) {
             if (in_array($key, static::customColumns())) {
                 $data[$key] = null;
@@ -120,22 +118,20 @@ class TenantRepository extends Repository
             }
         }
 
-        $data[static::dataColumn()] = json_encode($jsonData);
+        $data[static::dataColumn()] = json_encode($jsonData, JSON_THROW_ON_ERROR);
 
         $record->update($data);
     }
 
     public function decodeFreshDataForTenant(Tenant $tenant): array
     {
-        return $this->decodeData(
-            (array) $this->table()->where('id', $tenant->id)->first()
-        );
+        return static::decodeData((array) $this->table()->where('id', $tenant->id)->first());
     }
 
     public static function decodeData(array $columns): array
     {
         $dataColumn = static::dataColumn();
-        $decoded = json_decode($columns[$dataColumn], true);
+        $decoded = json_decode($columns[$dataColumn], true, 512, JSON_THROW_ON_ERROR);
         $columns = array_merge($columns, $decoded);
 
         // If $columns[$dataColumn] has been overriden by a value, don't delete the key.
@@ -149,7 +145,7 @@ class TenantRepository extends Repository
     public function insert(Tenant $tenant)
     {
         $this->table()->insert(array_merge(
-            $this->encodeData($tenant->data),
+            static::encodeData($tenant->data),
             ['id' => $tenant->id]
         ));
     }
@@ -162,7 +158,7 @@ class TenantRepository extends Repository
             unset($data[$customColumn]);
         }
 
-        $result = array_merge($result, [static::dataColumn() => json_encode($data)]);
+        $result = array_merge($result, [static::dataColumn() => json_encode($data, JSON_THROW_ON_ERROR)]);
 
         return $result;
     }

@@ -10,8 +10,6 @@ interface UniqueIdentifierGenerator
      * Generate a unique identifier.
      *
      * @param string[] $domains
-     * @param array $data
-     * @return string
      */
     public static function generate(array $domains, array $data = []): string;
 }

@@ -16,16 +16,12 @@ class RedirectTest extends TestCase
     public function tenant_redirect_macro_replaces_only_the_hostname()
     {
         config([
-            'tenancy.features' => ['Stancl\Tenancy\Features\TenantRedirect'],
+            'tenancy.features' => [\Stancl\Tenancy\Features\TenantRedirect::class],
         ]);
 
-        Route::get('/foobar', function () {
-            return 'Foo';
-        })->name('home');
+        Route::get('/foobar', fn() => 'Foo')->name('home');
 
-        Route::get('/redirect', function () {
-            return redirect()->route('home')->tenant('abcd');
-        });
+        Route::get('/redirect', fn() => redirect()->route('home')->tenant('abcd'));
 
         Tenant::create('foo.localhost');
         tenancy()->init('foo.localhost');
@@ -37,9 +33,7 @@ class RedirectTest extends TestCase
     /** @test */
     public function tenant_route_helper_generates_correct_url()
     {
-        Route::get('/abcdef/{a?}/{b?}', function () {
-            return 'Foo';
-        })->name('foo');
+        Route::get('/abcdef/{a?}/{b?}', fn() => 'Foo')->name('foo');
 
         $this->assertSame('http://foo.localhost/abcdef/as/df', tenant_route('foo', ['a' => 'as', 'b' => 'df'], 'foo.localhost'));
         $this->assertSame('http://foo.localhost/abcdef', tenant_route('foo', [], 'foo.localhost'));

@@ -17,17 +17,12 @@ interface StorageDriver
     /**
      * Find a tenant using an id.
      *
-     * @param string $id
-     * @return Tenant
      * @throws \Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedException
      */
     public function findById(string $id): Tenant;
 
     /**
      * Find a tenant using a domain name.
-     *
-     * @param string $domain
-     * @return Tenant
      */
     public function findByDomain(string $domain): Tenant;
 
@@ -42,8 +37,6 @@ interface StorageDriver
     /**
      * Ensure a tenant can be created.
      *
-     * @param Tenant $tenant
-     * @return void
      * @throws TenantCannotBeCreatedException
      */
     public function ensureTenantCanBeCreated(Tenant $tenant): void;
@@ -51,7 +44,6 @@ interface StorageDriver
     /**
      * Set default tenant (will be used for get/put when no tenant is supplied).
      *
-     * @param Tenant $tenant
      * @return self
      */
     public function withDefaultTenant(Tenant $tenant);
@@ -59,7 +51,6 @@ interface StorageDriver
     /**
      * Get a value from storage.
      *
-     * @param string $key
      * @param ?Tenant $tenant
      * @return mixed
      */
@@ -68,7 +59,6 @@ interface StorageDriver
     /**
      * Get multiple values from storage.
      *
-     * @param array $keys
      * @param ?Tenant $tenant
      * @return void
      */
@@ -77,19 +67,15 @@ interface StorageDriver
     /**
      * Put a value into storage.
      *
-     * @param string $key
-     * @param mixed $value
      * @param ?Tenant $tenant
-     * @return void
      */
-    public function put(string $key, $value, Tenant $tenant = null): void;
+    public function put(string $key, mixed $value, Tenant $tenant = null): void;
 
     /**
      * Put multiple values into storage.
      *
      * @param mixed[string] $kvPairs
      * @param ?Tenant $tenant
-     * @return void
      */
     public function putMany(array $kvPairs, Tenant $tenant = null): void;
 }

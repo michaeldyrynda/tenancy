@@ -39,9 +39,6 @@ class DatabaseManager
 
     /**
      * Set the TenantManager instance, used to dispatch tenancy events.
-     *
-     * @param TenantManager $tenantManager
-     * @return self
      */
     public function withTenantManager(TenantManager $tenantManager): self
     {
@@ -53,7 +50,6 @@ class DatabaseManager
     /**
      * Connect to a tenant's database.
      *
-     * @param Tenant $tenant
      * @return void
      */
     public function connect(Tenant $tenant)
@@ -79,7 +75,6 @@ class DatabaseManager
     /**
      * Change the default database connection config.
      *
-     * @param string $connection
      * @return void
      */
     public function setDefaultConnection(string $connection)
@@ -109,9 +104,6 @@ class DatabaseManager
 
     /**
      * Get the name of the connection that $connectionName should be based on.
-     *
-     * @param string $connectionName
-     * @return string
      */
     public function getBaseConnection(string $connectionName): string
     {
@@ -122,9 +114,6 @@ class DatabaseManager
 
     /**
      * Get the driver of a database connection.
-     *
-     * @param string $connectionName
-     * @return string|null
      */
     public function getDriver(string $connectionName): ?string
     {
@@ -134,7 +123,6 @@ class DatabaseManager
     /**
      * Switch the application's connection.
      *
-     * @param string $connection
      * @return void
      */
     public function switchConnection(string $connection)
@@ -147,8 +135,6 @@ class DatabaseManager
     /**
      * Check if a tenant can be created.
      *
-     * @param Tenant $tenant
-     * @return void
      * @throws TenantCannotBeCreatedException
      * @throws DatabaseManagerNotRegisteredException
      * @throws TenantDatabaseAlreadyExistsException
@@ -163,7 +149,6 @@ class DatabaseManager
     /**
      * Create a database for a tenant.
      *
-     * @param Tenant $tenant
      * @param ShouldQueue[]|callable[] $afterCreating
      * @return void
      * @throws DatabaseManagerNotRegisteredException
@@ -206,7 +191,6 @@ class DatabaseManager
     /**
      * Delete a tenant's database.
      *
-     * @param Tenant $tenant
      * @return void
      * @throws DatabaseManagerNotRegisteredException
      */
@@ -229,8 +213,6 @@ class DatabaseManager
     /**
      * Get the TenantDatabaseManager for a tenant's database connection.
      *
-     * @param Tenant $tenant
-     * @return TenantDatabaseManager
      * @throws DatabaseManagerNotRegisteredException
      */
     public function getTenantDatabaseManager(Tenant $tenant): TenantDatabaseManager
@@ -254,9 +236,6 @@ class DatabaseManager
 
     /**
      * What key on the connection config should be used to separate tenants.
-     *
-     * @param string $connectionName
-     * @return string
      */
     public function separateBy(string $connectionName): string
     {

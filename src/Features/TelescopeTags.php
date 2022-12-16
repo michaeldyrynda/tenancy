@@ -17,9 +17,7 @@ class TelescopeTags implements Feature
 
     public function __construct()
     {
-        $this->callback = function ($entry) {
-            return [];
-        };
+        $this->callback = fn($entry) => [];
     }
 
     public function bootstrap(TenantManager $tenantManager): void

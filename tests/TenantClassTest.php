@@ -111,9 +111,7 @@ class TenantClassTest extends TestCase
     {
         $this->assertSame(null, tenancy()->getTenant());
 
-        $users_table_empty = function () {
-            return count(\DB::table('users')->get()) === 0;
-        };
+        $users_table_empty = fn() => (is_countable(\DB::table('users')->get()) ? count(\DB::table('users')->get()) : 0) === 0;
 
         $tenant = Tenant::new()->save();
         \Artisan::call('tenants:migrate', [
@@ -164,13 +162,9 @@ class TenantClassTest extends TestCase
 
         $this->assertSame($tenant2, tenancy()->getTenant());
 
-        $this->assertSame(2, $tenant->run(function () {
-            return \DB::table('users')->count();
-        }));
+        $this->assertSame(2, $tenant->run(fn() => \DB::table('users')->count()));
 
         // test that the tenant variable can be accessed
-        $this->assertSame($tenant->id, $tenant->run(function ($tenant) {
-            return $tenant->id;
-        }));
+        $this->assertSame($tenant->id, $tenant->run(fn($tenant) => $tenant->id));
     }
 }

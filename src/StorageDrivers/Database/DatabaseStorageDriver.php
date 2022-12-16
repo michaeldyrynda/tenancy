@@ -42,15 +42,13 @@ class DatabaseStorageDriver implements StorageDriver, CanDeleteKeys, CanFindByAn
     {
         $this->app = $app;
         $this->cache = $cache;
-        $this->centralDatabase = $this->getCentralConnection();
+        $this->centralDatabase = static::getCentralConnection();
         $this->tenants = new TenantRepository($config);
         $this->domains = new DomainRepository($config);
     }
 
     /**
      * Get the central database connection.
-     *
-     * @return Connection
      */
     public static function getCentralConnection(): Connection
     {
@@ -64,9 +62,7 @@ class DatabaseStorageDriver implements StorageDriver, CanDeleteKeys, CanFindByAn
 
     public function findByDomain(string $domain): Tenant
     {
-        $query = function () use ($domain) {
-            return $this->domains->getTenantIdByDomain($domain);
-        };
+        $query = fn() => $this->domains->getTenantIdByDomain($domain);
 
         if ($this->usesCache()) {
             $id = $this->cache->getTenantIdByDomain($domain, $query);
@@ -88,9 +84,7 @@ class DatabaseStorageDriver implements StorageDriver, CanDeleteKeys, CanFindByAn
 
             return $data ? $this->tenants->decodeData($data) : null;
         };
-        $domainsQuery = function () use ($id) {
-            return $this->domains->getTenantDomains($id);
-        };
+        $domainsQuery = fn() => $this->domains->getTenantDomains($id);
 
         if ($this->usesCache()) {
             $data = $this->cache->getDataById($id, $dataQuery);
@@ -111,9 +105,7 @@ class DatabaseStorageDriver implements StorageDriver, CanDeleteKeys, CanFindByAn
     /**
      * Find a tenant using an arbitrary key.
      *
-     * @param string $key
      * @param mixed $value
-     * @return Tenant
      * @throws TenantDoesNotExistException
      */
     public function findBy(string $key, $value): Tenant
@@ -193,10 +185,8 @@ class DatabaseStorageDriver implements StorageDriver, CanDeleteKeys, CanFindByAn
      */
     public function all(array $ids = []): array
     {
-        return $this->tenants->all($ids)->map(function ($data) {
-            return Tenant::fromStorage($data)
-                ->withDomains($this->domains->getTenantDomains($data['id']));
-        })->toArray();
+        return $this->tenants->all($ids)->map(fn($data) => Tenant::fromStorage($data)
+            ->withDomains($this->domains->getTenantDomains($data['id'])))->toArray();
     }
 
     /**
@@ -221,7 +211,7 @@ class DatabaseStorageDriver implements StorageDriver, CanDeleteKeys, CanFindByAn
 
     public function put(string $key, $value, Tenant $tenant = null): void
     {
-        $tenant = $tenant ?? $this->currentTenant();
+        $tenant ??= $this->currentTenant();
         $this->tenants->put($key, $value, $tenant);
 
         if ($this->usesCache()) {
@@ -231,7 +221,7 @@ class DatabaseStorageDriver implements StorageDriver, CanDeleteKeys, CanFindByAn
 
     public function putMany(array $kvPairs, Tenant $tenant = null): void
     {
-        $tenant = $tenant ?? $this->currentTenant();
+        $tenant ??= $this->currentTenant();
         $this->tenants->putMany($kvPairs, $tenant);
 
         if ($this->usesCache()) {
@@ -241,7 +231,7 @@ class DatabaseStorageDriver implements StorageDriver, CanDeleteKeys, CanFindByAn
 
     public function deleteMany(array $keys, Tenant $tenant = null): void
     {
-        $tenant = $tenant ?? $this->currentTenant();
+        $tenant ??= $this->currentTenant();
         $this->tenants->deleteMany($keys, $tenant);
 
         if ($this->usesCache()) {

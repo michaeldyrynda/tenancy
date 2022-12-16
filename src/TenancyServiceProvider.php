@@ -14,48 +14,32 @@ class TenancyServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
-     *
-     * @return void
      */
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../assets/config.php', 'tenancy');
 
-        $this->app->bind(Contracts\StorageDriver::class, function ($app) {
-            return $app->make($app['config']['tenancy.storage_drivers'][$app['config']['tenancy.storage_driver']]['driver']);
-        });
+        $this->app->bind(Contracts\StorageDriver::class, fn($app) => $app->make($app['config']['tenancy.storage_drivers'][$app['config']['tenancy.storage_driver']]['driver']));
         $this->app->bind(Contracts\UniqueIdentifierGenerator::class, $this->app['config']['tenancy.unique_id_generator']);
         $this->app->singleton(DatabaseManager::class);
         $this->app->singleton(TenantManager::class);
-        $this->app->bind(Tenant::class, function ($app) {
-            return $app[TenantManager::class]->getTenant();
-        });
+        $this->app->bind(Tenant::class, fn($app) => $app[TenantManager::class]->getTenant());
 
         foreach ($this->app['config']['tenancy.bootstrappers'] as $bootstrapper) {
             $this->app->singleton($bootstrapper);
         }
 
-        $this->app->singleton(Commands\Migrate::class, function ($app) {
-            return new Commands\Migrate($app['migrator'], $app[DatabaseManager::class]);
-        });
-        $this->app->singleton(Commands\Rollback::class, function ($app) {
-            return new Commands\Rollback($app['migrator'], $app[DatabaseManager::class]);
-        });
-        $this->app->singleton(Commands\Seed::class, function ($app) {
-            return new Commands\Seed($app['db'], $app[DatabaseManager::class]);
-        });
+        $this->app->singleton(Commands\Migrate::class, fn($app) => new Commands\Migrate($app['migrator'], $app[DatabaseManager::class]));
+        $this->app->singleton(Commands\Rollback::class, fn($app) => new Commands\Rollback($app['migrator'], $app[DatabaseManager::class]));
+        $this->app->singleton(Commands\Seed::class, fn($app) => new Commands\Seed($app['db'], $app[DatabaseManager::class]));
 
-        $this->app->bind('globalCache', function ($app) {
-            return new CacheManager($app);
-        });
+        $this->app->bind('globalCache', fn($app) => new CacheManager($app));
 
         $this->app->register(TenantRouteServiceProvider::class);
     }
 
     /**
      * Bootstrap services.
-     *
-     * @return void
      */
     public function boot(): void
     {

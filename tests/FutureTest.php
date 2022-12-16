@@ -35,7 +35,7 @@ class FutureTest extends TestCase
     public function tenant_can_be_identified_using_an_arbitrary_string()
     {
         if (! tenancy()->storage instanceof CanFindByAnyKey) {
-            $this->markTestSkipped(get_class(tenancy()->storage) . ' does not implement the CanFindByAnyKey interface.');
+            $this->markTestSkipped(tenancy()->storage::class . ' does not implement the CanFindByAnyKey interface.');
         }
 
         $tenant = Tenant::new()->withData(['email' => 'foo@example.com'])->save();

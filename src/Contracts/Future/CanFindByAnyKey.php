@@ -15,10 +15,7 @@ interface CanFindByAnyKey
     /**
      * Find a tenant using an arbitrary key.
      *
-     * @param string $key
-     * @param mixed $value
-     * @return Tenant
      * @throws TenantDoesNotExistException
      */
-    public function findBy(string $key, $value): Tenant;
+    public function findBy(string $key, mixed $value): Tenant;
 }

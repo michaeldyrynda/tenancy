@@ -15,7 +15,6 @@ interface CanDeleteKeys
      * Delete keys from the storage.
      *
      * @param string[] $keys
-     * @return void
      */
     public function deleteMany(array $keys, Tenant $tenant = null): void;
 }

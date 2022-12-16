@@ -221,9 +221,7 @@ class TenantManagerTest extends TestCase
     {
         $id = 'abc' . $this->randomString();
         $this->assertSame($id, Tenant::create(['foo.localhost'], ['id' => $id])->id);
-        $this->assertTrue(tenancy()->all()->contains(function ($tenant) use ($id) {
-            return $tenant->id === $id;
-        }));
+        $this->assertTrue(tenancy()->all()->contains(fn($tenant) => $tenant->id === $id));
     }
 
     /** @test */

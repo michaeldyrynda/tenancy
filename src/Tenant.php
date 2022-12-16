@@ -59,10 +59,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Use new() if you don't want to swap dependencies.
-     *
-     * @param StorageDriver $storage
-     * @param TenantManager $tenantManager
-     * @param UniqueIdentifierGenerator $idGenerator
      */
     public function __construct(Repository $config, StorageDriver $storage, TenantManager $tenantManager, UniqueIdentifierGenerator $idGenerator)
     {
@@ -74,13 +70,10 @@ class Tenant implements ArrayAccess
 
     /**
      * Public constructor.
-     *
-     * @param Application $app
-     * @return self
      */
     public static function new(Application $app = null): self
     {
-        $app = $app ?? app();
+        $app ??= app();
 
         return new static(
             $app[Repository::class],
@@ -93,9 +86,6 @@ class Tenant implements ArrayAccess
     /**
      * DO NOT CALL THIS METHOD FROM USERLAND. Used by storage
      * drivers to create persisted instances of Tenant.
-     *
-     * @param array $data
-     * @return self
      */
     public static function fromStorage(array $data): self
     {
@@ -106,10 +96,8 @@ class Tenant implements ArrayAccess
      * Create a tenant in a single call.
      *
      * @param string|string[] $domains
-     * @param array $data
-     * @return self
      */
-    public static function create($domains, array $data = []): self
+    public static function create(string|array $domains, array $data = []): self
     {
         return static::new()->withDomains((array) $domains)->withData($data)->save();
     }
@@ -117,9 +105,6 @@ class Tenant implements ArrayAccess
     /**
      * DO NOT CALL THIS METHOD FROM USERLAND UNLESS YOU KNOW WHAT YOU ARE DOING.
      * Set $persisted.
-     *
-     * @param bool $persisted
-     * @return self
      */
     public function persisted(bool $persisted): self
     {
@@ -130,8 +115,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Does this model exist in the tenant storage.
-     *
-     * @return bool
      */
     public function isPersisted(): bool
     {
@@ -142,9 +125,8 @@ class Tenant implements ArrayAccess
      * Assign domains to the tenant.
      *
      * @param string|string[] $domains
-     * @return self
      */
-    public function addDomains($domains): self
+    public function addDomains(string|array $domains): self
     {
         $domains = (array) $domains;
         $this->domains = array_merge($this->domains, $domains);
@@ -156,9 +138,8 @@ class Tenant implements ArrayAccess
      * Unassign domains from the tenant.
      *
      * @param string|string[] $domains
-     * @return self
      */
-    public function removeDomains($domains): self
+    public function removeDomains(string|array $domains): self
     {
         $domains = (array) $domains;
         $this->domains = array_diff($this->domains, $domains);
@@ -168,8 +149,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Unassign all domains from the tenant.
-     *
-     * @return self
      */
     public function clearDomains(): self
     {
@@ -182,9 +161,8 @@ class Tenant implements ArrayAccess
      * Set (overwrite) the tenant's domains.
      *
      * @param string|string[] $domains
-     * @return self
      */
-    public function withDomains($domains): self
+    public function withDomains(string|array $domains): self
     {
         $domains = (array) $domains;
 
@@ -195,9 +173,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Set (overwrite) tenant data.
-     *
-     * @param array $data
-     * @return self
      */
     public function withData(array $data): self
     {
@@ -218,8 +193,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Write the tenant's state to storage.
-     *
-     * @return self
      */
     public function save(): self
     {
@@ -238,8 +211,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Delete a tenant from storage.
-     *
-     * @return self
      */
     public function delete(): self
     {
@@ -253,8 +224,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Unassign all domains from the tenant and write to storage.
-     *
-     * @return self
      */
     public function softDelete(): self
     {
@@ -273,8 +242,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Get the tenant's database's name.
-     *
-     * @return string
      */
     public function getDatabaseName(): string
     {
@@ -283,8 +250,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Get the tenant's database connection's name.
-     *
-     * @return string
      */
     public function getConnectionName(): string
     {
@@ -297,7 +262,7 @@ class Tenant implements ArrayAccess
      * @param string|string[] $keys
      * @return void
      */
-    public function get($keys)
+    public function get(string|array $keys)
     {
         if (is_array($keys)) {
             if ((array_intersect(array_keys($this->data), $keys) === $keys) ||
@@ -327,10 +292,8 @@ class Tenant implements ArrayAccess
      * Set a value and write to storage.
      *
      * @param string|array<string, mixed> $key
-     * @param mixed $value
-     * @return self
      */
-    public function put($key, $value = null): self
+    public function put(string|array $key, mixed $value = null): self
     {
         $this->manager->event('tenant.updating', $this);
 
@@ -367,9 +330,6 @@ class Tenant implements ArrayAccess
 
     /**
      * Delete a key from the tenant's storage.
-     *
-     * @param string $key
-     * @return self
      */
     public function deleteKey(string $key): self
     {
@@ -380,14 +340,13 @@ class Tenant implements ArrayAccess
      * Delete keys from the tenant's storage.
      *
      * @param string[] $keys
-     * @return self
      */
     public function deleteKeys(array $keys): self
     {
         $this->manager->event('tenant.updating', $this);
 
         if (! $this->storage instanceof CanDeleteKeys) {
-            throw new NotImplementedException(get_class($this->storage), 'deleteMany',
+            throw new NotImplementedException($this->storage::class, 'deleteMany',
                 'This method was added to storage drivers provided by the package in 2.2.0 and will be part of the StorageDriver contract in 3.0.0.'
             );
         } else {
@@ -404,12 +363,8 @@ class Tenant implements ArrayAccess
 
     /**
      * Set a value in the data array without saving into storage.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return self
      */
-    public function with(string $key, $value): self
+    public function with(string $key, mixed $value): self
     {
         $this->data[$key] = $value;
 
@@ -419,7 +374,6 @@ class Tenant implements ArrayAccess
     /**
      * Run a closure inside the tenant's environment.
      *
-     * @param Closure $closure
      * @return mixed
      */
     public function run(Closure $closure)
@@ -428,7 +382,7 @@ class Tenant implements ArrayAccess
 
         $this->manager->initializeTenancy($this);
         $result = $closure($this);
-        $this->manager->endTenancy($this);
+        $this->manager->endTenancy();
 
         if ($originalTenant) {
             $this->manager->initializeTenancy($originalTenant);

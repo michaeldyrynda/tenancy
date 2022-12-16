@@ -20,7 +20,7 @@ class TenantConfigTest extends TestCase
                 'paypal_api_public' => 'services.paypal.public',
                 'paypal_api_private' => 'services.paypal.private',
             ],
-            'tenancy.features' => ['Stancl\Tenancy\Features\TenantConfig'],
+            'tenancy.features' => [\Stancl\Tenancy\Features\TenantConfig::class],
         ]);
 
         tenancy()->create('foo.localhost', [

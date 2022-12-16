@@ -24,8 +24,6 @@ class QueuedTenantDatabaseDeleter implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param TenantDatabaseManager $databaseManager
-     * @param string $databaseName
      * @return void
      */
     public function __construct(TenantDatabaseManager $databaseManager, string $databaseName)

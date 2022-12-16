@@ -29,9 +29,7 @@ class QueueTest extends TestCase
 
         dispatch(new TestJob());
 
-        Event::assertDispatched(JobProcessing::class, function ($event) {
-            return $event->job->payload()['tenant_id'] === tenant('id');
-        });
+        Event::assertDispatched(JobProcessing::class, fn($event) => $event->job->payload()['tenant_id'] === tenant('id'));
     }
 
     /** @test */
@@ -42,9 +40,7 @@ class QueueTest extends TestCase
 
         dispatch(new TestJob())->onConnection('central');
 
-        Event::assertDispatched(JobProcessing::class, function ($event) {
-            return ! isset($event->job->payload()['tenant_id']);
-        });
+        Event::assertDispatched(JobProcessing::class, fn($event) => ! isset($event->job->payload()['tenant_id']));
     }
 }
 
@@ -69,6 +65,6 @@ class TestJob implements ShouldQueue
      */
     public function handle()
     {
-        logger(json_encode(\DB::table('users')->get()));
+        logger(json_encode(\DB::table('users')->get(), JSON_THROW_ON_ERROR));
     }
 }

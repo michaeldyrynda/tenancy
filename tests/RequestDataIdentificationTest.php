@@ -23,17 +23,13 @@ class RequestDataIdentificationTest extends TestCase
             ],
         ]);
 
-        Route::middleware(InitializeTenancyByRequestData::class)->get('/test', function () {
-            return 'Tenant id: ' . tenant('id');
-        });
+        Route::middleware(InitializeTenancyByRequestData::class)->get('/test', fn() => 'Tenant id: ' . tenant('id'));
     }
 
     /** @test */
     public function header_identification_works()
     {
-        $this->app->bind(InitializeTenancyByRequestData::class, function () {
-            return new InitializeTenancyByRequestData('X-Tenant');
-        });
+        $this->app->bind(InitializeTenancyByRequestData::class, fn() => new InitializeTenancyByRequestData('X-Tenant'));
         $tenant = Tenant::new()->save();
         $tenant2 = Tenant::new()->save();
 
@@ -48,9 +44,7 @@ class RequestDataIdentificationTest extends TestCase
     /** @test */
     public function query_parameter_identification_works()
     {
-        $this->app->bind(InitializeTenancyByRequestData::class, function () {
-            return new InitializeTenancyByRequestData(null, 'tenant');
-        });
+        $this->app->bind(InitializeTenancyByRequestData::class, fn() => new InitializeTenancyByRequestData(null, 'tenant'));
         $tenant = Tenant::new()->save();
         $tenant2 = Tenant::new()->save();
 

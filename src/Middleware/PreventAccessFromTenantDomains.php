@@ -18,22 +18,19 @@ class PreventAccessFromTenantDomains
 
     public function __construct(callable $central404 = null)
     {
-        $this->central404 = $central404 ?? function () {
-            return 404;
-        };
+        $this->central404 = $central404 ?? fn() => 404;
     }
 
     /**
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
         // If the route is universal, always let the request pass.
-        if ($this->routeHasMiddleware($request->route(), 'universal')) {
+        if (static::routeHasMiddleware($request->route(), 'universal')) {
             return $next($request);
         }
 
@@ -42,7 +39,7 @@ class PreventAccessFromTenantDomains
         $isExemptDomain = in_array($request->getHost(), config('tenancy.exempt_domains'));
         $isTenantDomain = ! $isExemptDomain;
 
-        $isTenantRoute = $this->routeHasMiddleware($request->route(), 'tenancy');
+        $isTenantRoute = static::routeHasMiddleware($request->route(), 'tenancy');
 
         if ($isTenantDomain && ! $isTenantRoute) { // accessing web routes from tenant domains
             return redirect(config('tenancy.home_url'));

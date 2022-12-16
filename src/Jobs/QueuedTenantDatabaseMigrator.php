@@ -19,13 +19,12 @@ class QueuedTenantDatabaseMigrator implements ShouldQueue
     /** @var string */
     protected $tenantId;
 
-    /** @var array */
-    protected $migrationParameters = [];
-
-    public function __construct(Tenant $tenant, $migrationParameters = [])
+    /**
+     * @param mixed[] $migrationParameters
+     */
+    public function __construct(Tenant $tenant, protected $migrationParameters = [])
     {
         $this->tenantId = $tenant->id;
-        $this->migrationParameters = $migrationParameters;
     }
 
     /**

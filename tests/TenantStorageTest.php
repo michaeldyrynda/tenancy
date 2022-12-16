@@ -13,11 +13,7 @@ class TenantStorageTest extends TestCase
     public function deleting_a_tenant_works()
     {
         $abc = Tenant::new()->withDomains(['abc.localhost'])->save();
-        $exists = function () use ($abc) {
-            return tenancy()->all()->contains(function ($tenant) use ($abc) {
-                return $tenant->id === $abc->id;
-            });
-        };
+        $exists = fn() => tenancy()->all()->contains(fn($tenant) => $tenant->id === $abc->id);
 
         $this->assertTrue($exists());
 
